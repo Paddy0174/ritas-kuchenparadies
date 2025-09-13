@@ -182,7 +182,7 @@
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+function init(){
   const $ = (id) => document.getElementById(id);
 
   // --- Fields used in compute ---
@@ -353,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
       '</div>'
     ].join('');
 
-    // Handlers
     const recalc = ()=> recalcIng();
     wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
     wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); recalcIng(); });
@@ -433,7 +432,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // initial compute
   compute();
-});
+}
+
+// ✅ robustes Init – läuft egal, wann das Script geladen wird
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
