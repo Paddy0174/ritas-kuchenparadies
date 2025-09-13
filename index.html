@@ -11,6 +11,15 @@
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     details summary { cursor:pointer; }
+    .hr { height:1px; background: color-mix(in oklab, currentColor 20%, transparent); opacity:.35; margin:.5rem 0 0.75rem; }
+    .card { background: color-mix(in oklab, white 70%, transparent); }
+    .dark .card { background: color-mix(in oklab, black 40%, transparent); }
+    .btn { line-height:1; white-space:nowrap; padding:.5rem .75rem; border-radius:.75rem; font-weight:600; }
+    .btn-primary { background:#059669; color:#fff; }
+    .btn-dark { background:#09090b; color:#fff; }
+    .dark .btn-dark { background:#fff; color:#09090b; }
+    .input { width:100%; border-radius:.75rem; border:1px solid; padding:.5rem .75rem; }
+    .label { display:block; font-size:.75rem; opacity:.7; }
   </style>
 </head>
 <body class="bg-gradient-to-b from-rose-50 to-amber-50 dark:from-zinc-950 dark:to-zinc-900 text-zinc-900 dark:text-zinc-100 min-h-screen">
@@ -21,11 +30,11 @@
     </header>
 
     <!-- Simple Inputs -->
-    <section class="bg-white/70 dark:bg-zinc-900/60 rounded-2xl shadow p-4 space-y-4 divide-y divide-zinc-200/70 dark:divide-zinc-700/50">
+    <section class="card rounded-2xl shadow p-4 space-y-4">
       <!-- Zutaten gesamt + Zutatenrechner -->
       <div class="space-y-3">
         <label class="block">Gesamtkosten Zutaten ($)
-          <input id="ingredients" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="18.00" />
+          <input id="ingredients" type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="18.00" />
         </label>
 
         <!-- Zutatenrechner (eingeklappt) -->
@@ -35,67 +44,69 @@
             <p class="text-xs opacity-70">Zeilenweise erfassen. Entweder über Packungsgrößen <strong>oder</strong> per <strong>Direktpreis ($)</strong>. Direktpreis überschreibt die Berechnung.</p>
             <div id="ingRows" class="space-y-3"></div>
             <div class="flex gap-2 items-center">
-              <button id="addIngRow" class="rounded-xl px-3 py-2 bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 whitespace-nowrap">+ Zeile</button>
-              <button id="applyIngSum" class="rounded-xl px-3 py-2 bg-emerald-600 text-white whitespace-nowrap">Übernehmen → Zutaten</button>
+              <button id="addIngRow" type="button" class="btn btn-dark">+ Zeile</button>
+              <button id="applyIngSum" type="button" class="btn btn-primary">Übernehmen → Zutaten</button>
               <div class="ml-auto text-sm"><span class="opacity-70">Zwischensumme:</span> <strong id="ingSubtotal">$0.00</strong></div>
             </div>
           </div>
         </details>
       </div>
 
-      <!-- Portionen + Backzeit/No-bake + Verpackung pro Kuchen -->
-      <div class="pt-4 space-y-3">
+      <div class="hr"></div>
+
+      <!-- Portionen + Backzeit/No-bake -->
+      <div class="space-y-3">
         <label class="block">Stücke / Portionen
-          <input id="servings" type="number" step="1" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="12" />
+          <input id="servings" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="12" />
         </label>
 
         <label class="block">Backzeit (Minuten)
-          <input id="bakeMin" type="number" step="1" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="30" />
+          <input id="bakeMin" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="30" />
         </label>
 
         <div class="flex items-center gap-3">
           <input id="noBake" type="checkbox" class="w-4 h-4" />
           <label for="noBake">No-Bake / Kühlschrankkuchen</label>
         </div>
+      </div>
 
-        <!-- Verpackungsrechner (eingeklappt) -->
+      <div class="hr"></div>
+
+      <!-- Verpackung: erst Feld, dann Rechner -->
+      <div class="space-y-3">
+        <label class="block">Verpackung pro Kuchen ($)
+          <input id="packaging" type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="1.50" />
+        </label>
+
         <details id="packagingHelper" class="rounded-xl border border-zinc-300 dark:border-zinc-700">
           <summary class="px-3 py-2 cursor-pointer select-none">📦 Verpackungsrechner (optional) – aufklappen</summary>
           <div class="p-3 pt-2">
             <p class="text-xs opacity-70 mb-2">Beispiel: 100 Förmchen kosten $5 → (Preis / Anzahl) × Portionen = Verpackung pro Kuchen.</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label class="block">Anzahl in Packung
-                <input id="packCount" type="number" step="1" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="100" />
+                <input id="packCount" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="100" />
               </label>
               <label class="block">Packungspreis ($)
-                <input id="packPrice" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="5.00" />
+                <input id="packPrice" type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="5.00" />
               </label>
-              <label class="block">Berechnet: Verpackung pro Kuchen
-                <input id="packPerCakeCalc" type="text" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="$0.60" readonly />
+              <label class="block">Verpackung pro Kuchen
+                <input id="packPerCakeCalc" type="text" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="$0.60" readonly />
               </label>
             </div>
             <div class="flex gap-2 mt-2">
-              <button id="applyPackCost" class="rounded-xl px-3 py-2 bg-emerald-600 text-white whitespace-nowrap">Übernehmen → Verpackung</button>
+              <button id="applyPackCost" type="button" class="btn btn-primary">Übernehmen → Verpackung</button>
             </div>
           </div>
         </details>
-
-        <!-- Sichtbares Feld Verpackung pro Kuchen -->
-        <label class="block">Verpackung pro Kuchen ($)
-          <input id="packaging" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="1.50" />
-        </label>
       </div>
 
-      <!-- Arbeit + Marge Radios -->
-      <div class="pt-4 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label class="block">Arbeitszeit (Std)
-            <input id="laborHours" type="number" step="0.25" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="1.0" />
-          </label>
-          <label class="block">Stundenlohn ($/Std)
-            <input id="laborRate" type="number" step="0.5" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="15" />
-          </label>
-        </div>
+      <div class="hr"></div>
+
+      <!-- Arbeit + Marge -->
+      <div class="space-y-3">
+        <label class="block">Arbeitszeit (Std)
+          <input id="laborHours" type="number" step="0.25" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="1.0" />
+        </label>
 
         <div>
           <p class="text-sm font-medium mb-1">Marge:</p>
@@ -107,39 +118,15 @@
           </div>
           <div id="customMarginWrap" class="mt-2 hidden">
             <label class="block">Marge (%) – eigene Vorgabe
-              <input id="marginPct" type="number" step="1" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="30" />
+              <input id="marginPct" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="30" />
             </label>
           </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label class="block">Strompreis ($/kWh)
-            <input id="kwhPrice" type="number" step="0.001" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="0.147" />
-          </label>
-          <label class="block">Ofen-Leistung (W)
-            <input id="ovenW" type="number" step="50" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="3000" />
-          </label>
-          <label class="block">Vorheizen (Minuten)
-            <input id="preheatMin" type="number" step="1" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="10" />
-          </label>
-          <label class="block">Wasser für Abwasch (Gallonen)
-            <input id="waterGal" type="number" step="0.5" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="5" />
-          </label>
-          <label class="block">Wasserpreis ($/1.000 gal)
-            <input id="waterPerThousand" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="2.00" />
-          </label>
-          <label class="block">Fixe Sonstiges / Abnutzung ($)
-            <input id="fixedOverhead" type="number" step="0.01" class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 px-3 py-2" value="1.00" />
-          </label>
-          <label class="block hidden"><!-- hidden input to keep compute list stable if needed -->
-            <input id="marginPctHidden" type="hidden" value="30" />
-          </label>
         </div>
       </div>
     </section>
 
     <!-- Results -->
-    <section class="bg-white/70 dark:bg-zinc-900/60 rounded-2xl shadow p-4">
+    <section class="card rounded-2xl shadow p-4">
       <h2 class="font-semibold mb-2">Ergebnis</h2>
       <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
         <div class="p-3 rounded-xl bg-sky-100/60 dark:bg-sky-900/40">
@@ -155,8 +142,39 @@
           <div id="pricePerSlice" class="text-2xl font-bold">$0.00</div>
         </div>
       </div>
-      <button id="shareBtn" class="mt-4 w-full rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 py-2 font-semibold">Link mit aktuellen Werten kopieren</button>
+      <button id="shareBtn" type="button" class="btn btn-dark w-full mt-4">Link mit aktuellen Werten kopieren</button>
     </section>
+
+    <!-- Weitere Optionen (unten, aufklappbar) -->
+    <details class="card rounded-2xl shadow p-4">
+      <summary class="font-semibold mb-2">⚙️ Weitere Optionen</summary>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+        <label class="block">Stundenlohn ($/Std)
+          <input id="laborRate" type="number" step="0.5" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="15" />
+        </label>
+        <label class="block">Strompreis ($/kWh)
+          <input id="kwhPrice" type="number" step="0.001" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="0.147" />
+        </label>
+        <label class="block">Ofen-Leistung (W)
+          <input id="ovenW" type="number" step="50" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="3000" />
+        </label>
+        <label class="block">Vorheizen (Minuten)
+          <input id="preheatMin" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="10" />
+        </label>
+        <label class="block">Wasser für Abwasch (Gallonen)
+          <input id="waterGal" type="number" step="0.5" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="5" />
+        </label>
+        <label class="block">Wasserpreis ($/1.000 gal)
+          <input id="waterPerThousand" type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="2.00" />
+        </label>
+        <label class="block">Fixe Sonstiges / Abnutzung ($)
+          <input id="fixedOverhead" type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="1.00" />
+        </label>
+        <label class="block">Ausschuss / Verschnitt (%)
+          <input id="wastePct" type="number" step="1" class="input border-zinc-300 dark:border-zinc-700 bg-white/60 dark:bg-zinc-800 mt-1" value="5" />
+        </label>
+      </div>
+    </details>
 
     <footer class="py-6 text-center text-xs opacity-70">
       <p>Made with ❤️ especially for Rita. Alle Werte frei anpassbar. Diese Seite speichert nichts – alles bleibt lokal.</p>
@@ -164,264 +182,258 @@
   </div>
 
 <script>
-const $ = (id) => document.getElementById(id);
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (id) => document.getElementById(id);
 
-// --- Fields used in compute ---
-const fields = [
-  'ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand',
-  'packaging','fixedOverhead','laborHours','laborRate','wastePct'
-];
-// margin is handled via radios (or custom input)
+  // --- Fields used in compute ---
+  const fields = [
+    'ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand',
+    'packaging','fixedOverhead','laborHours','laborRate','wastePct'
+  ];
 
-function kWhCost(ovenW, minutes, price){
-  const kWh = (ovenW * (minutes/60)) / 1000;
-  return kWh * price;
-}
-
-function waterCost(gal, perThousand){
-  return (gal * (perThousand / 1000));
-}
-
-function fmt(n){ return n.toLocaleString(undefined,{style:'currency', currency:'USD'}); }
-function fmtCurrency(n){ return isFinite(n) ? n.toLocaleString(undefined,{style:'currency', currency:'USD'}) : '$0.00'; }
-
-// last bake minutes remembered for no-bake toggle
-let lastBakeMin = null;
-
-function getMarginPct(){
-  const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
-  if(occ === 'custom'){
-    const v = parseFloat($('#marginPct')?.value || $('#marginPctHidden')?.value || '30');
-    return isFinite(v) ? v : 30;
+  function kWhCost(ovenW, minutes, price){
+    const kWh = (ovenW * (minutes/60)) / 1000;
+    return kWh * price;
   }
-  return parseFloat(occ);
-}
+  function waterCost(gal, perThousand){ return (gal * (perThousand / 1000)); }
+  function fmt(n){ return n.toLocaleString(undefined,{style:'currency', currency:'USD'}); }
+  function fmtCurrency(n){ return isFinite(n) ? n.toLocaleString(undefined,{style:'currency', currency:'USD'}) : '$0.00'; }
 
-function compute(){
-  const v = Object.fromEntries(fields.map(f => [f, parseFloat($(f).value || '0')]));
-  const marginPct = getMarginPct();
-  const noBake = $('#noBake').checked;
+  // Remember last bake time for no-bake toggle
+  let lastBakeMin = null;
 
-  const energy = noBake ? 0 : kWhCost(v.ovenW, v.bakeMin + v.preheatMin, v.kwhPrice);
-  const water = waterCost(v.waterGal, v.waterPerThousand);
-  const labor = v.laborHours * v.laborRate;
-
-  const base = v.ingredients + energy + water + v.packaging + v.fixedOverhead + labor;
-  const wasteAdj = base * (v.wastePct/100);
-  const costTotal = base + wasteAdj;
-
-  const margin = costTotal * (marginPct/100);
-  const priceCake = costTotal + margin;
-  const perSlice = priceCake / Math.max(1, v.servings);
-
-  $('#costTotalDisplay').textContent = fmt(costTotal);
-  $('#pricePerCake').textContent = fmt(priceCake);
-  $('#pricePerSlice').textContent = fmt(perSlice);
-}
-
-// listeners
-['ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand','packaging','fixedOverhead','laborHours','laborRate','wastePct']
-  .forEach(id => $(id).addEventListener('input', ()=>{ compute(); recalcPackagingHelper(); }));
-
-// margin radios
-document.querySelectorAll('input[name="occasion"]').forEach(r => r.addEventListener('change', ()=>{
-  const val = r.value;
-  if(val === 'custom'){
-    $('#customMarginWrap').classList.remove('hidden');
-  } else {
-    $('#customMarginWrap').classList.add('hidden');
-  }
-  compute();
-}));
-
-// custom margin input
-document.addEventListener('input', (e)=>{
-  if(e.target && e.target.id === 'marginPct'){
-    const customRadio = document.querySelector('input[name="occasion"][value="custom"]');
-    if(customRadio) customRadio.checked = true;
-    $('#customMarginWrap').classList.remove('hidden');
-    compute();
-  }
-});
-
-// no-bake → set bake time to 0 (and restore on uncheck)
-$('#noBake').addEventListener('change', ()=>{
-  if($('#noBake').checked){
-    const current = parseFloat($('#bakeMin').value || '0');
-    lastBakeMin = isFinite(current) ? current : 0;
-    $('#bakeMin').value = 0;
-  } else {
-    if(lastBakeMin !== null) $('#bakeMin').value = String(lastBakeMin);
-  }
-  compute();
-});
-
-// Deep-linking
-function loadFromURL(){
-  const p = new URLSearchParams(location.search);
-  fields.forEach(f => { if(p.has(f)) $(f).value = p.get(f); });
-  if(p.has('noBake')) $('#noBake').checked = p.get('noBake') === 'true';
-  if(p.has('occasion')) {
-    const occ = p.get('occasion');
-    const el = document.querySelector(`input[name=occasion][value="${occ}"]`);
-    if(el) el.checked = true;
-    $('#customMarginWrap').classList.toggle('hidden', occ !== 'custom');
-  }
-}
-function shareLink(){
-  const p = new URLSearchParams();
-  fields.forEach(f => p.set(f, $(f).value));
-  p.set('noBake', $('#noBake').checked);
-  const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
-  p.set('occasion', occ);
-  const url = `${location.origin}${location.pathname}?${p.toString()}`;
-  navigator.clipboard.writeText(url).then(()=>{
-    const btn = $('#shareBtn');
-    const old = btn.textContent; btn.textContent = 'Link kopiert!';
-    setTimeout(()=>btn.textContent = old, 1200);
-  }).catch(()=>{ alert(url); });
-}
-$('#shareBtn').addEventListener('click', shareLink);
-
-loadFromURL();
-compute();
-
-/* ===================== Zutatenrechner (Card-Layout) ===================== */
-let ingSubtotalNumber = 0;
-
-function unitToBase(u){
-  const map = {kg:1000, g:1, lb:453.592, oz:28.3495, l:1000, ml:1, cup:1, tsp:1, tbsp:1, pcs:1};
-  return map[u] ?? 1;
-}
-
-function makeIngRow({name='', used=0, unit='g', packSize=0, packPrice=0, directPrice=0} = {}){
-  const wrap = document.createElement('div');
-  wrap.className = 'rounded-xl border border-zinc-300 dark:border-zinc-700 p-3 bg-white/60 dark:bg-zinc-800 space-y-2';
-
-  wrap.innerHTML = [
-    // Zeile 1: Name
-    '<div>',
-      '<label class="block text-xs opacity-70">Zutat</label>',
-      '<input class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 name" value="', String(name).replace(/"/g,'&quot;') ,'">',
-    '</div>',
-    // Zeile 2: Verwendet + Einheit
-    '<div class="grid grid-cols-2 gap-2">',
-      '<div>',
-        '<label class="block text-xs opacity-70">Verwendet</label>',
-        '<input type="number" step="0.01" class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 used" value="', used ,'">',
-      '</div>',
-      '<div>',
-        '<label class="block text-xs opacity-70">Einheit</label>',
-        '<select class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 unit">',
-          ['g','kg','oz','lb','ml','l','cup','tsp','tbsp','pcs'].map(u=>'<option '+(u===unit?'selected':'')+'>'+u+'</option>').join(''),
-        '</select>',
-      '</div>',
-    '</div>',
-    // Zeile 3: Packungsgröße + Packungspreis
-    '<div class="grid grid-cols-2 gap-2">',
-      '<div>',
-        '<label class="block text-xs opacity-70">Packungsgröße</label>',
-        '<input type="number" step="0.01" class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 packSize" value="', packSize ,'">',
-      '</div>',
-      '<div>',
-        '<label class="block text-xs opacity-70">Packungspreis ($)</label>',
-        '<input type="number" step="0.01" class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 packPrice" value="', packPrice ,'">',
-      '</div>',
-    '</div>',
-    // Zeile 4: Direktpreis + Kosten + Entfernen
-    '<div class="grid grid-cols-3 gap-2 items-end">',
-      '<div>',
-        '<label class="block text-xs opacity-70">Direktpreis ($)</label>',
-        '<input type="number" step="0.01" class="mt-1 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 direct" value="', directPrice ,'">',
-      '</div>',
-      '<div>',
-        '<div class="text-xs opacity-70">Kosten genutzt</div>',
-        '<div class="mt-1 h-[42px] flex items-center justify-end font-semibold cost">$0.00</div>',
-      '</div>',
-      '<div class="text-right">',
-        '<button class="remove mt-6 px-3 py-2 rounded-lg bg-rose-600 text-white">Entfernen</button>',
-      '</div>',
-    '</div>'
-  ].join('');
-
-  // Handlers
-  const recalc = ()=> recalcIng();
-  wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
-  wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); recalcIng(); });
-
-  return wrap;
-}
-
-function recalcIng(){
-  const rows = Array.from(document.querySelectorAll('#ingRows > div'));
-  let subtotal = 0;
-
-  rows.forEach(row => {
-    const used = parseFloat(row.querySelector('.used')?.value || '0');
-    const unit = row.querySelector('.unit')?.value || 'g';
-    const packSize = parseFloat(row.querySelector('.packSize')?.value || '0');
-    const packPrice = parseFloat(row.querySelector('.packPrice')?.value || '0');
-    const directPrice = parseFloat(row.querySelector('.direct')?.value || '');
-
-    let cost = 0;
-    if(!isNaN(directPrice) && directPrice > 0){
-      cost = directPrice; // Direktpreis dominiert
-    } else {
-      let ratio = 0;
-      if(packSize > 0){
-        const baseUsed = used * unitToBase(unit);
-        const basePack = packSize * unitToBase(unit);
-        ratio = basePack > 0 ? (baseUsed / basePack) : 0;
-      }
-      cost = Math.max(0, ratio) * packPrice;
+  function getMarginPct(){
+    const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
+    if(occ === 'custom'){
+      const v = parseFloat($('#marginPct')?.value || '30');
+      return isFinite(v) ? v : 30;
     }
+    return parseFloat(occ);
+  }
 
-    row.querySelector('.cost').textContent = fmtCurrency(cost);
-    subtotal += isFinite(cost) ? cost : 0;
+  function compute(){
+    const v = Object.fromEntries(fields.map(f => [f, parseFloat($(f).value || '0')]));
+    const marginPct = getMarginPct();
+    const noBake = $('#noBake').checked;
+
+    const energy = noBake ? 0 : kWhCost(v.ovenW, v.bakeMin + v.preheatMin, v.kwhPrice);
+    const water = waterCost(v.waterGal, v.waterPerThousand);
+    const labor = v.laborHours * v.laborRate;
+
+    const base = v.ingredients + energy + water + v.packaging + v.fixedOverhead + labor;
+    const wasteAdj = base * (v.wastePct/100);
+    const costTotal = base + wasteAdj;
+
+    const margin = costTotal * (marginPct/100);
+    const priceCake = costTotal + margin;
+    const perSlice = priceCake / Math.max(1, v.servings);
+
+    $('#costTotalDisplay').textContent = fmt(costTotal);
+    $('#pricePerCake').textContent = fmt(priceCake);
+    $('#pricePerSlice').textContent = fmt(perSlice);
+  }
+
+  // --- listeners ---
+  ['ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand','packaging','fixedOverhead','laborHours','laborRate','wastePct']
+    .forEach(id => $(id).addEventListener('input', ()=>{ compute(); recalcPackagingHelper(); }));
+
+  // margin radios
+  document.querySelectorAll('input[name="occasion"]').forEach(r => r.addEventListener('change', ()=>{
+    const val = r.value;
+    if(val === 'custom'){
+      $('#customMarginWrap').classList.remove('hidden');
+    } else {
+      $('#customMarginWrap').classList.add('hidden');
+    }
+    compute();
+  }));
+
+  // custom margin input
+  document.addEventListener('input', (e)=>{
+    if(e.target && e.target.id === 'marginPct'){
+      const customRadio = document.querySelector('input[name="occasion"][value="custom"]');
+      if(customRadio) customRadio.checked = true;
+      $('#customMarginWrap').classList.remove('hidden');
+      compute();
+    }
   });
 
-  ingSubtotalNumber = subtotal; // numerisch merken
-  $('#ingSubtotal').textContent = fmtCurrency(subtotal);
-}
+  // no-bake → set bake time to 0 (and restore on uncheck)
+  $('#noBake').addEventListener('change', ()=>{
+    if($('#noBake').checked){
+      const current = parseFloat($('#bakeMin').value || '0');
+      lastBakeMin = isFinite(current) ? current : 0;
+      $('#bakeMin').value = 0;
+    } else {
+      if(lastBakeMin !== null) $('#bakeMin').value = String(lastBakeMin);
+    }
+    compute();
+  });
 
-function addIngRow(defaults){
-  const row = makeIngRow(defaults || {});
-  $('#ingRows').appendChild(row);
-  recalcIng();
-}
+  // Deep-linking
+  function loadFromURL(){
+    const p = new URLSearchParams(location.search);
+    fields.forEach(f => { if(p.has(f)) $(f).value = p.get(f); });
+    if(p.has('noBake')) $('#noBake').checked = p.get('noBake') === 'true';
+    if(p.has('occasion')) {
+      const occ = p.get('occasion');
+      const el = document.querySelector(`input[name=occasion][value="${occ}"]`);
+      if(el) el.checked = true;
+      $('#customMarginWrap').classList.toggle('hidden', occ !== 'custom');
+    }
+  }
+  function shareLink(){
+    const p = new URLSearchParams();
+    fields.forEach(f => p.set(f, $(f).value));
+    p.set('noBake', $('#noBake').checked);
+    const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
+    p.set('occasion', occ);
+    const url = `${location.origin}${location.pathname}?${p.toString()}`;
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = $('#shareBtn');
+      const old = btn.textContent; btn.textContent = 'Link kopiert!';
+      setTimeout(()=>btn.textContent = old, 1200);
+    }).catch(()=>{ alert(url); });
+  }
+  $('#shareBtn').addEventListener('click', shareLink);
 
-$('#addIngRow').addEventListener('click', (e)=>{ e.preventDefault(); addIngRow(); });
-$('#applyIngSum').addEventListener('click', (e)=>{
-  e.preventDefault();
-  // numerische Zwischensumme direkt verwenden (kein Text-Parsing)
-  $('#ingredients').value = ingSubtotalNumber.toFixed(2);
+  loadFromURL();
+
+  // ===================== Zutatenrechner (Card-Layout) =====================
+  let ingSubtotalNumber = 0;
+
+  function unitToBase(u){
+    const map = {kg:1000, g:1, lb:453.592, oz:28.3495, l:1000, ml:1, cup:1, tsp:1, tbsp:1, pcs:1};
+    return map[u] ?? 1;
+  }
+
+  function makeIngRow({name='', used=0, unit='g', packSize=0, packPrice=0, directPrice=0} = {}){
+    const wrap = document.createElement('div');
+    wrap.className = 'rounded-xl border border-zinc-300 dark:border-zinc-700 p-3 bg-white/60 dark:bg-zinc-800 space-y-2';
+
+    wrap.innerHTML = [
+      '<div>',
+        '<label class="label">Zutat</label>',
+        '<input class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 name" value="', String(name).replace(/"/g,'&quot;') ,'">',
+      '</div>',
+      '<div class="grid grid-cols-2 gap-2">',
+        '<div>',
+          '<label class="label">Verwendet</label>',
+          '<input type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 used" value="', used ,'">',
+        '</div>',
+        '<div>',
+          '<label class="label">Einheit</label>',
+          '<select class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 unit">',
+            ['g','kg','oz','lb','ml','l','cup','tsp','tbsp','pcs'].map(u=>'<option '+(u===unit?'selected':'')+'>'+u+'</option>').join(''),
+          '</select>',
+        '</div>',
+      '</div>',
+      '<div class="grid grid-cols-2 gap-2">',
+        '<div>',
+          '<label class="label">Packungsgröße</label>',
+          '<input type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 packSize" value="', packSize ,'">',
+        '</div>',
+        '<div>',
+          '<label class="label">Packungspreis ($)</label>',
+          '<input type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 packPrice" value="', packPrice ,'">',
+        '</div>',
+      '</div>',
+      '<div class="grid grid-cols-3 gap-2 items-end">',
+        '<div>',
+          '<label class="label">Direktpreis ($)</label>',
+          '<input type="number" step="0.01" class="input border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 mt-1 direct" value="', directPrice ,'">',
+        '</div>',
+        '<div>',
+          '<div class="label">Kosten genutzt</div>',
+          '<div class="mt-1 h-[42px] flex items-center justify-end font-semibold cost">$0.00</div>',
+        '</div>',
+        '<div class="text-right">',
+          '<button type="button" class="btn mt-6 bg-rose-600 text-white remove">Entfernen</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+
+    // Handlers
+    const recalc = ()=> recalcIng();
+    wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+    wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); recalcIng(); });
+
+    return wrap;
+  }
+
+  function recalcIng(){
+    const rows = Array.from(document.querySelectorAll('#ingRows > div'));
+    let subtotal = 0;
+
+    rows.forEach(row => {
+      const used = parseFloat(row.querySelector('.used')?.value || '0');
+      const unit = row.querySelector('.unit')?.value || 'g';
+      const packSize = parseFloat(row.querySelector('.packSize')?.value || '0');
+      const packPrice = parseFloat(row.querySelector('.packPrice')?.value || '0');
+      const directPrice = parseFloat(row.querySelector('.direct')?.value || '');
+
+      let cost = 0;
+      if(!isNaN(directPrice) && directPrice > 0){
+        cost = directPrice; // Direktpreis dominiert
+      } else {
+        let ratio = 0;
+        if(packSize > 0){
+          const baseUsed = used * unitToBase(unit);
+          const basePack = packSize * unitToBase(unit);
+          ratio = basePack > 0 ? (baseUsed / basePack) : 0;
+        }
+        cost = Math.max(0, ratio) * packPrice;
+      }
+
+      row.querySelector('.cost').textContent = fmtCurrency(cost);
+      subtotal += isFinite(cost) ? cost : 0;
+    });
+
+    ingSubtotalNumber = subtotal; // numerisch merken
+    $('#ingSubtotal').textContent = fmtCurrency(subtotal);
+  }
+
+  function addIngRow(defaults){
+    const row = makeIngRow(defaults || {});
+    $('#ingRows').appendChild(row);
+    recalcIng();
+  }
+
+  $('#addIngRow').addEventListener('click', (e)=>{ e.preventDefault(); addIngRow(); });
+  $('#applyIngSum').addEventListener('click', (e)=>{
+    e.preventDefault();
+    $('#ingredients').value = ingSubtotalNumber.toFixed(2); // korrekt: numerische Summe
+    compute();
+  });
+
+  // Beispielzeilen
+  addIngRow({name:'Butter', used:113, unit:'g', packSize:454, packPrice:4.50});
+  addIngRow({name:'Zucker (Direktpreis)', directPrice:2.00});
+
+  /* ===================== Verpackungsrechner ===================== */
+  function recalcPackagingHelper(){
+    const packCount = parseFloat($('#packCount')?.value||'0');
+    const packPrice = parseFloat($('#packPrice')?.value||'0');
+    const servings = parseFloat($('#servings')?.value||'0');
+    let perCake = 0;
+    if(packCount>0){ perCake = (packPrice / packCount) * servings; }
+    if($('#packPerCakeCalc')) $('#packPerCakeCalc').value = fmt(perCake);
+    return perCake;
+  }
+  ['packCount','packPrice','servings'].forEach(id=>{
+    const el = $(id); if(el) el.addEventListener('input', recalcPackagingHelper);
+  });
+  $('#applyPackCost').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const val = recalcPackagingHelper();
+    $('#packaging').value = (isFinite(val)? val : 0).toFixed(2);
+    compute();
+  });
+  recalcPackagingHelper();
+
+  // initial compute
   compute();
 });
-
-// Beispielzeilen
-addIngRow({name:'Butter', used:113, unit:'g', packSize:454, packPrice:4.50});
-addIngRow({name:'Zucker (Direktpreis)', directPrice:2.00});
-
-/* ===================== Verpackungsrechner ===================== */
-function recalcPackagingHelper(){
-  const packCount = parseFloat($('#packCount')?.value||'0');
-  const packPrice = parseFloat($('#packPrice')?.value||'0');
-  const servings = parseFloat($('#servings')?.value||'0');
-  let perCake = 0;
-  if(packCount>0){ perCake = (packPrice / packCount) * servings; }
-  if($('#packPerCakeCalc')) $('#packPerCakeCalc').value = fmt(perCake);
-  return perCake;
-}
-['packCount','packPrice','servings'].forEach(id=>{
-  const el = $(id); if(el) el.addEventListener('input', recalcPackagingHelper);
-});
-$('#applyPackCost').addEventListener('click', (e)=>{
-  e.preventDefault();
-  const val = recalcPackagingHelper();
-  $('#packaging').value = (isFinite(val)? val : 0).toFixed(2);
-  compute();
-});
-recalcPackagingHelper();
 </script>
 </body>
 </html>
