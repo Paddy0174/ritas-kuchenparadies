@@ -182,28 +182,29 @@
   </div>
 
 <script>
-function init(){
-  const $ = (id) => document.getElementById(id);
+/* ---------- robust helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const on = (id, evt, fn) => { const el = $(id); if (el) el.addEventListener(evt, fn); };
+const qsAll = (sel) => Array.from(document.querySelectorAll(sel));
 
+/* ---------- init ---------- */
+function init(){
   // --- Fields used in compute ---
   const fields = [
     'ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand',
     'packaging','fixedOverhead','laborHours','laborRate','wastePct'
   ];
 
-  function kWhCost(ovenW, minutes, price){
-    const kWh = (ovenW * (minutes/60)) / 1000;
-    return kWh * price;
-  }
+  function kWhCost(ovenW, minutes, price){ const kWh = (ovenW * (minutes/60)) / 1000; return kWh * price; }
   function waterCost(gal, perThousand){ return (gal * (perThousand / 1000)); }
   function fmt(n){ return n.toLocaleString(undefined,{style:'currency', currency:'USD'}); }
   function fmtCurrency(n){ return isFinite(n) ? n.toLocaleString(undefined,{style:'currency', currency:'USD'}) : '$0.00'; }
 
-  // Remember last bake time for no-bake toggle
   let lastBakeMin = null;
 
   function getMarginPct(){
-    const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
+    const checked = document.querySelector('input[name="occasion"]:checked');
+    const occ = checked ? checked.value : '30';
     if(occ === 'custom'){
       const v = parseFloat($('#marginPct')?.value || '30');
       return isFinite(v) ? v : 30;
@@ -212,9 +213,9 @@ function init(){
   }
 
   function compute(){
-    const v = Object.fromEntries(fields.map(f => [f, parseFloat($(f).value || '0')]));
+    const v = Object.fromEntries(fields.map(f => [f, parseFloat($(f)?.value || '0')]));
     const marginPct = getMarginPct();
-    const noBake = $('#noBake').checked;
+    const noBake = $('#noBake')?.checked ?? false;
 
     const energy = noBake ? 0 : kWhCost(v.ovenW, v.bakeMin + v.preheatMin, v.kwhPrice);
     const water = waterCost(v.waterGal, v.waterPerThousand);
@@ -228,78 +229,75 @@ function init(){
     const priceCake = costTotal + margin;
     const perSlice = priceCake / Math.max(1, v.servings);
 
-    $('#costTotalDisplay').textContent = fmt(costTotal);
-    $('#pricePerCake').textContent = fmt(priceCake);
-    $('#pricePerSlice').textContent = fmt(perSlice);
+    if($('#costTotalDisplay')) $('#costTotalDisplay').textContent = fmt(costTotal);
+    if($('#pricePerCake')) $('#pricePerCake').textContent = fmt(priceCake);
+    if($('#pricePerSlice')) $('#pricePerSlice').textContent = fmt(perSlice);
   }
 
-  // --- listeners ---
-  ['ingredients','servings','ovenW','bakeMin','preheatMin','kwhPrice','waterGal','waterPerThousand','packaging','fixedOverhead','laborHours','laborRate','wastePct']
-    .forEach(id => $(id).addEventListener('input', ()=>{ compute(); recalcPackagingHelper(); }));
+  // inputs
+  fields.forEach(id => on(id, 'input', ()=>{ compute(); recalcPackagingHelper(); }));
 
-  // margin radios
-  document.querySelectorAll('input[name="occasion"]').forEach(r => r.addEventListener('change', ()=>{
-    const val = r.value;
-    if(val === 'custom'){
-      $('#customMarginWrap').classList.remove('hidden');
+  // radios
+  qsAll('input[name="occasion"]').forEach(r => r.addEventListener('change', ()=>{
+    if(r.value === 'custom'){
+      $('#customMarginWrap')?.classList.remove('hidden');
     } else {
-      $('#customMarginWrap').classList.add('hidden');
+      $('#customMarginWrap')?.classList.add('hidden');
     }
     compute();
   }));
 
-  // custom margin input
+  // custom margin direct edit
   document.addEventListener('input', (e)=>{
     if(e.target && e.target.id === 'marginPct'){
-      const customRadio = document.querySelector('input[name="occasion"][value="custom"]');
-      if(customRadio) customRadio.checked = true;
-      $('#customMarginWrap').classList.remove('hidden');
+      const custom = document.querySelector('input[name="occasion"][value="custom"]');
+      if(custom) custom.checked = true;
+      $('#customMarginWrap')?.classList.remove('hidden');
       compute();
     }
   });
 
-  // no-bake → set bake time to 0 (and restore on uncheck)
-  $('#noBake').addEventListener('change', ()=>{
-    if($('#noBake').checked){
-      const current = parseFloat($('#bakeMin').value || '0');
-      lastBakeMin = isFinite(current) ? current : 0;
-      $('#bakeMin').value = 0;
+  // no-bake
+  on('noBake','change', ()=>{
+    const nb = $('#noBake')?.checked;
+    if(nb){
+      const cur = parseFloat($('#bakeMin')?.value || '0');
+      lastBakeMin = isFinite(cur) ? cur : 0;
+      if($('#bakeMin')) $('#bakeMin').value = 0;
     } else {
-      if(lastBakeMin !== null) $('#bakeMin').value = String(lastBakeMin);
+      if(lastBakeMin !== null && $('#bakeMin')) $('#bakeMin').value = String(lastBakeMin);
     }
     compute();
   });
 
-  // Deep-linking
-  function loadFromURL(){
+  // deep-link
+  (function loadFromURL(){
     const p = new URLSearchParams(location.search);
-    fields.forEach(f => { if(p.has(f)) $(f).value = p.get(f); });
-    if(p.has('noBake')) $('#noBake').checked = p.get('noBake') === 'true';
-    if(p.has('occasion')) {
+    fields.forEach(f => { if(p.has(f) && $(f)) $(f).value = p.get(f); });
+    if(p.has('noBake') && $('#noBake')) $('#noBake').checked = p.get('noBake') === 'true';
+    if(p.has('occasion')){
       const occ = p.get('occasion');
       const el = document.querySelector(`input[name=occasion][value="${occ}"]`);
       if(el) el.checked = true;
-      $('#customMarginWrap').classList.toggle('hidden', occ !== 'custom');
+      if($('#customMarginWrap')) $('#customMarginWrap').classList.toggle('hidden', occ !== 'custom');
     }
-  }
-  function shareLink(){
+  })();
+
+  on('shareBtn','click', ()=>{
     const p = new URLSearchParams();
-    fields.forEach(f => p.set(f, $(f).value));
-    p.set('noBake', $('#noBake').checked);
+    fields.forEach(f => p.set(f, $(f)?.value ?? ''));
+    p.set('noBake', $('#noBake')?.checked ? 'true' : 'false');
     const occ = document.querySelector('input[name="occasion"]:checked')?.value || '30';
     p.set('occasion', occ);
     const url = `${location.origin}${location.pathname}?${p.toString()}`;
     navigator.clipboard.writeText(url).then(()=>{
-      const btn = $('#shareBtn');
+      const btn = $('#shareBtn'); if(!btn) return;
       const old = btn.textContent; btn.textContent = 'Link kopiert!';
-      setTimeout(()=>btn.textContent = old, 1200);
+      setTimeout(()=>{ btn.textContent = old; }, 1200);
     }).catch(()=>{ alert(url); });
-  }
-  $('#shareBtn').addEventListener('click', shareLink);
+  });
 
-  loadFromURL();
-
-  // ===================== Zutatenrechner (Card-Layout) =====================
+  /* ===== Zutatenrechner ===== */
   let ingSubtotalNumber = 0;
 
   function unitToBase(u){
@@ -310,7 +308,6 @@ function init(){
   function makeIngRow({name='', used=0, unit='g', packSize=0, packPrice=0, directPrice=0} = {}){
     const wrap = document.createElement('div');
     wrap.className = 'rounded-xl border border-zinc-300 dark:border-zinc-700 p-3 bg-white/60 dark:bg-zinc-800 space-y-2';
-
     wrap.innerHTML = [
       '<div>',
         '<label class="label">Zutat</label>',
@@ -352,28 +349,24 @@ function init(){
         '</div>',
       '</div>'
     ].join('');
-
     const recalc = ()=> recalcIng();
     wrap.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
     wrap.querySelector('.remove').addEventListener('click', ()=>{ wrap.remove(); recalcIng(); });
-
     return wrap;
   }
 
   function recalcIng(){
     const rows = Array.from(document.querySelectorAll('#ingRows > div'));
     let subtotal = 0;
-
     rows.forEach(row => {
       const used = parseFloat(row.querySelector('.used')?.value || '0');
       const unit = row.querySelector('.unit')?.value || 'g';
       const packSize = parseFloat(row.querySelector('.packSize')?.value || '0');
       const packPrice = parseFloat(row.querySelector('.packPrice')?.value || '0');
       const directPrice = parseFloat(row.querySelector('.direct')?.value || '');
-
       let cost = 0;
       if(!isNaN(directPrice) && directPrice > 0){
-        cost = directPrice; // Direktpreis dominiert
+        cost = directPrice;
       } else {
         let ratio = 0;
         if(packSize > 0){
@@ -383,33 +376,25 @@ function init(){
         }
         cost = Math.max(0, ratio) * packPrice;
       }
-
-      row.querySelector('.cost').textContent = fmtCurrency(cost);
+      const costEl = row.querySelector('.cost'); if(costEl) costEl.textContent = fmtCurrency(cost);
       subtotal += isFinite(cost) ? cost : 0;
     });
-
-    ingSubtotalNumber = subtotal; // numerisch merken
-    $('#ingSubtotal').textContent = fmtCurrency(subtotal);
+    ingSubtotalNumber = subtotal;
+    if($('#ingSubtotal')) $('#ingSubtotal').textContent = fmtCurrency(subtotal);
   }
 
-  function addIngRow(defaults){
-    const row = makeIngRow(defaults || {});
-    $('#ingRows').appendChild(row);
+  const ingRowsWrap = $('#ingRows');
+  if(ingRowsWrap){
+    // Startzeilen
+    const r1 = makeIngRow({name:'Butter', used:113, unit:'g', packSize:454, packPrice:4.50});
+    const r2 = makeIngRow({name:'Zucker (Direktpreis)', directPrice:2.00});
+    ingRowsWrap.appendChild(r1); ingRowsWrap.appendChild(r2);
     recalcIng();
   }
+  on('addIngRow','click',(e)=>{ e.preventDefault(); if($('#ingRows')){ $('#ingRows').appendChild(makeIngRow()); recalcIng(); } });
+  on('applyIngSum','click',(e)=>{ e.preventDefault(); if($('#ingredients')) $('#ingredients').value = (window.ingSubtotalNumber ?? 0).toFixed(2); compute(); });
 
-  $('#addIngRow').addEventListener('click', (e)=>{ e.preventDefault(); addIngRow(); });
-  $('#applyIngSum').addEventListener('click', (e)=>{
-    e.preventDefault();
-    $('#ingredients').value = ingSubtotalNumber.toFixed(2); // korrekt: numerische Summe
-    compute();
-  });
-
-  // Beispielzeilen
-  addIngRow({name:'Butter', used:113, unit:'g', packSize:454, packPrice:4.50});
-  addIngRow({name:'Zucker (Direktpreis)', directPrice:2.00});
-
-  /* ===================== Verpackungsrechner ===================== */
+  /* ===== Verpackungsrechner ===== */
   function recalcPackagingHelper(){
     const packCount = parseFloat($('#packCount')?.value||'0');
     const packPrice = parseFloat($('#packPrice')?.value||'0');
@@ -419,22 +404,15 @@ function init(){
     if($('#packPerCakeCalc')) $('#packPerCakeCalc').value = fmt(perCake);
     return perCake;
   }
-  ['packCount','packPrice','servings'].forEach(id=>{
-    const el = $(id); if(el) el.addEventListener('input', recalcPackagingHelper);
-  });
-  $('#applyPackCost').addEventListener('click', (e)=>{
-    e.preventDefault();
-    const val = recalcPackagingHelper();
-    $('#packaging').value = (isFinite(val)? val : 0).toFixed(2);
-    compute();
-  });
+  ['packCount','packPrice','servings'].forEach(id=> on(id,'input', recalcPackagingHelper));
+  on('applyPackCost','click',(e)=>{ e.preventDefault(); const val = recalcPackagingHelper(); if($('#packaging')) $('#packaging').value = (isFinite(val)? val : 0).toFixed(2); compute(); });
   recalcPackagingHelper();
 
   // initial compute
   compute();
 }
 
-// ✅ robustes Init – läuft egal, wann das Script geladen wird
+/* run init reliably */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
